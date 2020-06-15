@@ -54,7 +54,10 @@ impl Processor {
     }
 
     /// Insert all of the given records into the database.
-    pub(crate) fn process(&self, records: Vec<Vec<(String, Box<dyn ToSql>)>>) -> Result<()> {
+    pub(crate) fn process(
+        &self,
+        records: Vec<Vec<(String, Box<dyn ToSql + Send + Sync>)>>,
+    ) -> Result<()> {
         let insert_stmt = format!(
             "INSERT INTO LOG ({columns}) VALUES ({placeholders})",
             columns = self.columns,
@@ -112,7 +115,7 @@ impl Processor {
                     match val {
                         Value::Null => write!(&mut tw, "null\t")?,
                         Value::Integer(i) => write!(&mut tw, "{}\t", i)?,
-                        Value::Real(r) => write!(&mut tw, "{}\t", r)?,
+                        Value::Real(r) => write!(&mut tw, "{:.2}\t", r)?,
                         Value::Text(t) => write!(&mut tw, "{}\t", t)?,
                         Value::Blob(b) => write!(&mut tw, "{}\t", String::from_utf8(b)?)?,
                     }
